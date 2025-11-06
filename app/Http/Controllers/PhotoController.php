@@ -41,10 +41,13 @@ class PhotoController extends Controller
             ]
         ]);
 
+        $publicUrl = Storage::disk('public')->url($path);
+
         return response()->json([
             'success' => true,
             'message' => 'Photo saved successfully',
             'photo' => $photo,
+            'photo_url' => $publicUrl,
         ]);
     }
 

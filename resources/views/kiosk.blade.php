@@ -820,6 +820,45 @@
             color: #e74c3c;
             margin-bottom: 15px;
         }
+
+        .qr-container {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 26px;
+            background: rgba(0, 0, 0, 0.55);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            z-index: 20;
+        }
+
+        .qr-container img {
+            width: 220px;
+            height: 220px;
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .qr-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+        }
+
+        .qr-link {
+            font-size: 0.95rem;
+            color: #f17106;
+            text-decoration: none;
+            word-break: break-all;
+            max-width: 320px;
+        }
+
+        .qr-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -894,6 +933,16 @@
                 <img id="captured-photo-display" src="" alt="Captured Photo" class="captured-photo-display">
                 <img src="/03/Frame_4K_1.png" alt="Photo Frame" class="photo-frame">
             </div>
+            <h1 id="success-message">Saving Photo...</h1>
+            <div class="saving-indicator" id="saving-indicator">
+                <div class="spinner"></div>
+                <p>Please wait while we save your photo...</p>
+            </div>
+            <div class="qr-container hidden" id="qr-container">
+                <p class="qr-title">Scan to download your photo</p>
+                <img id="qr-code" alt="Download QR Code">
+                <a id="qr-link" class="qr-link" target="_blank" rel="noopener"></a>
+            </div>
             <div class="countdown hidden" id="countdown-container">Restarting in <span id="countdown">60</span> seconds...</div>
         </div>
     </div>
@@ -907,6 +956,18 @@
         const previewContainer = document.getElementById('preview-container');
         const cameraPreloader = document.getElementById('camera-preloader');
         const cameraLoading = document.getElementById('camera-loading');
+        const qrContainer = document.getElementById('qr-container');
+        const qrImage = document.getElementById('qr-code');
+        const qrLink = document.getElementById('qr-link');
+
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
 
         // CSRF Token for Laravel
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -996,12 +1057,12 @@
                     countdownDisplay.style.animation = '';
                     countdownDisplay.textContent = '3';
                     captureBtn.disabled = false;
-                    capturePhoto();
+                    capturePhoto().catch(error => console.error('capturePhoto failed', error));
                 }
             }, 1000);
         }
 
-        function capturePhoto() {
+        async function capturePhoto() {
             // Flash effect
             const flashOverlay = document.getElementById('flash-overlay');
             flashOverlay.classList.add('flash');
@@ -1017,37 +1078,40 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+            // Overlay frame image
+            try {
+                const frameImage = await loadImage('/03/Frame_4K_1.png');
+                ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+            } catch (frameError) {
+                console.error('Failed to load frame image:', frameError);
+            }
+
             // Convert to base64
             capturedImage = canvas.toDataURL('image/png');
 
             // Small delay for flash effect to complete
-            setTimeout(() => {
+            setTimeout(async () => {
                 // Stop camera
                 stopCamera();
 
                 // Display photo in frame on success screen
-                const capturedDisplay = document.getElementById('captured-photo-display');
-                if (capturedDisplay) {
-                    capturedDisplay.src = capturedImage;
-                }
+                document.getElementById('captured-photo-display').src = capturedImage;
 
                 // Hide camera screen, show success screen
                 document.getElementById('camera-screen').classList.add('hidden');
                 document.getElementById('success-screen').classList.remove('hidden');
 
                 // Update message
-                const successMessageEl = document.getElementById('success-message');
-                if (successMessageEl) {
-                    successMessageEl.textContent = 'Saving Photo...';
-                }
-                const savingIndicatorEl = document.getElementById('saving-indicator');
-                if (savingIndicatorEl) {
-                    savingIndicatorEl.classList.remove('hidden');
-                }
+                document.getElementById('success-message').textContent = 'Saving Photo...';
+                document.getElementById('saving-indicator').classList.remove('hidden');
                 document.getElementById('countdown-container').classList.add('hidden');
 
                 // Automatically save photo
-                savePhoto();
+                try {
+                    await savePhoto();
+                } catch (saveError) {
+                    console.error('Failed to save photo:', saveError);
+                }
             }, 300);
         }
 
@@ -1066,6 +1130,17 @@
                 return;
             }
 
+            if (qrContainer) {
+                qrContainer.classList.add('hidden');
+            }
+            if (qrImage) {
+                qrImage.src = '';
+            }
+            if (qrLink) {
+                qrLink.textContent = '';
+                qrLink.removeAttribute('href');
+            }
+
             try {
                 // Send photo to server
                 const response = await fetch('/api/photos', {
@@ -1081,22 +1156,41 @@
                     })
                 });
 
+                if (!response.ok) {
+                    console.warn('Photo save request failed', response);
+                }
+
                 const data = await response.json();
 
                 if (data.success) {
+                    console.log('Photo saved response', data);
                     // Update success message
-                    const successMessageEl = document.getElementById('success-message');
-                    if (successMessageEl) {
-                        successMessageEl.textContent = 'Photo Saved Successfully!';
-                    }
-                    const savingIndicatorEl = document.getElementById('saving-indicator');
-                    if (savingIndicatorEl) {
-                        savingIndicatorEl.classList.add('hidden');
-                    }
+                    document.getElementById('success-message').textContent = 'Photo Saved Successfully!';
+                    document.getElementById('saving-indicator').classList.add('hidden');
                     document.getElementById('countdown-container').classList.remove('hidden');
 
                     // Launch fireworks celebration
                     launchFireworks();
+
+                    // Generate QR code download link
+                    if (qrContainer && qrImage && qrLink && data.photo_url) {
+                        const downloadUrl = data.photo_url.startsWith('http')
+                            ? data.photo_url
+                            : `${window.location.origin}${data.photo_url}`;
+                        console.log('Generated QR download URL:', downloadUrl);
+                        qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(downloadUrl)}`;
+                        qrLink.textContent = downloadUrl;
+                        qrLink.href = downloadUrl;
+                        qrContainer.classList.remove('hidden');
+                    } else {
+                        console.warn('QR data missing', {
+                            qrContainer,
+                            qrImage,
+                            qrLink,
+                            photo_url: data.photo_url,
+                            data,
+                        });
+                    }
 
                     // Start countdown to restart
                     startCountdown();
@@ -1116,11 +1210,11 @@
 
                 // Still start countdown even on error
                 setTimeout(() => {
-                    const savingIndicatorEl = document.getElementById('saving-indicator');
-                    if (savingIndicatorEl) {
-                        savingIndicatorEl.classList.add('hidden');
-                    }
+                    document.getElementById('saving-indicator').classList.add('hidden');
                     document.getElementById('countdown-container').classList.remove('hidden');
+                    if (qrContainer) {
+                        qrContainer.classList.add('hidden');
+                    }
                     startCountdown();
                 }, 2000);
             }
@@ -1199,6 +1293,16 @@
             const countdownContainerEl = document.getElementById('countdown-container');
             if (countdownContainerEl) {
                 countdownContainerEl.classList.add('hidden');
+            }
+            if (qrContainer) {
+                qrContainer.classList.add('hidden');
+            }
+            if (qrImage) {
+                qrImage.src = '';
+            }
+            if (qrLink) {
+                qrLink.textContent = '';
+                qrLink.removeAttribute('href');
             }
 
             // Show welcome screen
