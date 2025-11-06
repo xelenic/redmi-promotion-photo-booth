@@ -261,10 +261,10 @@
         .countdown-number {
             font-size: 15rem;
             font-weight: 900;
-            color: white;
-            text-shadow: 0 0 30px rgba(255,255,255,0.8),
-                         0 0 60px rgba(255,255,255,0.6),
-                         0 0 90px rgba(255,255,255,0.4);
+            color: #f17106;
+            text-shadow: 0 0 35px rgba(241, 113, 6, 0.85),
+                         0 0 70px rgba(241, 113, 6, 0.6),
+                         0 0 110px rgba(241, 113, 6, 0.4);
             animation: countdownPulse 1s ease-in-out;
         }
 
@@ -286,9 +286,9 @@
         .countdown-smile {
             font-size: 10rem;
             font-weight: 700;
-            color: #4ade80;
-            text-shadow: 0 0 30px rgba(74, 222, 128, 0.8),
-                         0 0 60px rgba(74, 222, 128, 0.6);
+            color: #f17106;
+            text-shadow: 0 0 35px rgba(241, 113, 6, 0.85),
+                         0 0 70px rgba(241, 113, 6, 0.6);
             animation: countdownSmile 0.8s ease-in-out;
         }
 
@@ -343,7 +343,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: #0a0a0a;
             backdrop-filter: blur(10px);
             display: none;
             flex-direction: column;
@@ -364,14 +364,14 @@
             height: 100px;
             border-radius: 50%;
             border: 8px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #ff7300;
-            border-right-color: #fffb00;
-            border-bottom-color: #00ffd5;
-            border-left-color: #7a00ff;
+            border-top-color: #f17106;
+            border-right-color: #f17106;
+            border-bottom-color: rgba(241, 113, 6, 0.5);
+            border-left-color: rgba(241, 113, 6, 0.3);
             animation: spinRing 1s linear infinite;
             margin-bottom: 30px;
-            box-shadow: 0 0 30px rgba(255, 115, 0, 0.5),
-                        0 0 60px rgba(255, 251, 0, 0.3);
+            box-shadow: 0 0 30px rgba(241, 113, 6, 0.6),
+                        0 0 60px rgba(241, 113, 6, 0.4);
             position: relative;
         }
 
@@ -384,7 +384,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 115, 0, 0.3), transparent);
+            background: radial-gradient(circle, rgba(241, 113, 6, 0.4), transparent);
             animation: pulse 1.5s ease-in-out infinite;
         }
 
@@ -1030,8 +1030,8 @@
                         countdownDisplay.style.animation = '';
                     }, 10);
                 } else if (count === 0) {
-                    // Show "Smile!" or camera emoji
-                    countdownDisplay.textContent = '📸 Smile!';
+                    // Show "Smile!"
+                    countdownDisplay.textContent = 'Smile!';
                     countdownDisplay.className = 'countdown-smile';
                 } else {
                     // Take the photo
