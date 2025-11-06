@@ -822,16 +822,19 @@
         }
 
         .qr-container {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
             margin-top: 25px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
             padding: 18px 26px;
-            background: rgba(0, 0, 0, 0.55);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(8px);
+            /* background: rgba(0, 0, 0, 0.55); */
+            /* border-radius: 20px; */
+            /* border: 1px solid rgba(255, 255, 255, 0.08); */
+            /* backdrop-filter: blur(8px); */
             z-index: 20;
         }
 
@@ -840,6 +843,8 @@
             height: 220px;
             border-radius: 16px;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+            padding: 10px;
+            background-color: white;
         }
 
         .qr-title {
@@ -939,7 +944,6 @@
                 <p>Please wait while we save your photo...</p>
             </div>
             <div class="qr-container hidden" id="qr-container">
-                <p class="qr-title">Scan to download your photo</p>
                 <img id="qr-code" alt="Download QR Code">
                 <a id="qr-link" class="qr-link" target="_blank" rel="noopener"></a>
             </div>
