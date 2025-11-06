@@ -959,57 +959,6 @@
             }
         }
 
-        function startCountdown() {
-            const overlay = document.getElementById('countdown-overlay');
-            const countdownNumber = document.getElementById('countdown-number');
-            const captureButton = document.getElementById('capture-button');
-
-            // Disable button during countdown
-            captureButton.disabled = true;
-            captureButton.style.opacity = '0.5';
-
-            // Show overlay
-            overlay.classList.add('active');
-
-            let count = 3;
-            countdownNumber.textContent = count;
-
-            const countdownInterval = setInterval(() => {
-                count--;
-
-                if (count > 0) {
-                    // Update number and restart animation
-                    countdownNumber.style.animation = 'none';
-                    setTimeout(() => {
-                        countdownNumber.textContent = count;
-                        countdownNumber.style.animation = 'countdownPulse 1s ease-in-out';
-                    }, 10);
-                } else {
-                    clearInterval(countdownInterval);
-
-                    // Show "Smile!" or camera flash effect
-                    countdownNumber.textContent = '📸';
-                    countdownNumber.style.animation = 'none';
-                    setTimeout(() => {
-                        countdownNumber.style.animation = 'countdownPulse 0.5s ease-in-out';
-                    }, 10);
-
-                    // Capture after brief delay
-                    setTimeout(() => {
-                        overlay.classList.remove('active');
-                        capturePhoto();
-
-                        // Re-enable button
-                        captureButton.disabled = false;
-                        captureButton.style.opacity = '1';
-
-                        // Reset countdown number
-                        countdownNumber.textContent = '3';
-                    }, 500);
-                }
-            }, 1000);
-        }
-
         function startCountdownCapture() {
             // Disable button during countdown
             const captureBtn = document.getElementById('capture-button');
@@ -1043,6 +992,9 @@
                     // Take the photo
                     clearInterval(countdownInterval);
                     countdownOverlay.classList.remove('active');
+                    countdownDisplay.className = 'countdown-number';
+                    countdownDisplay.style.animation = '';
+                    countdownDisplay.textContent = '3';
                     captureBtn.disabled = false;
                     capturePhoto();
                 }
@@ -1074,15 +1026,24 @@
                 stopCamera();
 
                 // Display photo in frame on success screen
-                document.getElementById('captured-photo-display').src = capturedImage;
+                const capturedDisplay = document.getElementById('captured-photo-display');
+                if (capturedDisplay) {
+                    capturedDisplay.src = capturedImage;
+                }
 
                 // Hide camera screen, show success screen
                 document.getElementById('camera-screen').classList.add('hidden');
                 document.getElementById('success-screen').classList.remove('hidden');
 
                 // Update message
-                document.getElementById('success-message').textContent = 'Saving Photo...';
-                document.getElementById('saving-indicator').classList.remove('hidden');
+                const successMessageEl = document.getElementById('success-message');
+                if (successMessageEl) {
+                    successMessageEl.textContent = 'Saving Photo...';
+                }
+                const savingIndicatorEl = document.getElementById('saving-indicator');
+                if (savingIndicatorEl) {
+                    savingIndicatorEl.classList.remove('hidden');
+                }
                 document.getElementById('countdown-container').classList.add('hidden');
 
                 // Automatically save photo
@@ -1093,8 +1054,14 @@
         async function savePhoto() {
             if (!capturedImage) {
                 console.error('No photo captured');
-                document.getElementById('success-message').textContent = 'Error: No photo captured!';
-                document.getElementById('saving-indicator').classList.add('hidden');
+                const successMessageEl = document.getElementById('success-message');
+                if (successMessageEl) {
+                    successMessageEl.textContent = 'Error: No photo captured!';
+                }
+                const savingIndicatorEl = document.getElementById('saving-indicator');
+                if (savingIndicatorEl) {
+                    savingIndicatorEl.classList.add('hidden');
+                }
                 startCountdown();
                 return;
             }
@@ -1118,8 +1085,14 @@
 
                 if (data.success) {
                     // Update success message
-                    document.getElementById('success-message').textContent = 'Photo Saved Successfully!';
-                    document.getElementById('saving-indicator').classList.add('hidden');
+                    const successMessageEl = document.getElementById('success-message');
+                    if (successMessageEl) {
+                        successMessageEl.textContent = 'Photo Saved Successfully!';
+                    }
+                    const savingIndicatorEl = document.getElementById('saving-indicator');
+                    if (savingIndicatorEl) {
+                        savingIndicatorEl.classList.add('hidden');
+                    }
                     document.getElementById('countdown-container').classList.remove('hidden');
 
                     // Launch fireworks celebration
@@ -1132,12 +1105,21 @@
                 }
             } catch (error) {
                 console.error('Error saving photo:', error);
-                document.getElementById('success-message').textContent = 'Error Saving Photo';
-                document.getElementById('saving-indicator').innerHTML = '<p style="color: #ff6b6b;">Failed to save. Photo will still reset.</p>';
+                const successMessageEl = document.getElementById('success-message');
+                if (successMessageEl) {
+                    successMessageEl.textContent = 'Error Saving Photo';
+                }
+                const savingIndicatorEl = document.getElementById('saving-indicator');
+                if (savingIndicatorEl) {
+                    savingIndicatorEl.innerHTML = '<p style="color: #ff6b6b;">Failed to save. Photo will still reset.</p>';
+                }
 
                 // Still start countdown even on error
                 setTimeout(() => {
-                    document.getElementById('saving-indicator').classList.add('hidden');
+                    const savingIndicatorEl = document.getElementById('saving-indicator');
+                    if (savingIndicatorEl) {
+                        savingIndicatorEl.classList.add('hidden');
+                    }
                     document.getElementById('countdown-container').classList.remove('hidden');
                     startCountdown();
                 }, 2000);
@@ -1187,27 +1169,53 @@
         function resetKiosk() {
             // Reset all states
             capturedImage = null;
-            previewContainer.classList.remove('active');
+            if (previewContainer) {
+                previewContainer.classList.remove('active');
+            }
 
             // Clear captured photo display
-            document.getElementById('captured-photo-display').src = '';
+            const capturedDisplay = document.getElementById('captured-photo-display');
+            if (capturedDisplay) {
+                capturedDisplay.src = '';
+            }
 
             // Clear fireworks
-            document.getElementById('fireworks-container').innerHTML = '';
+            const fireworksContainer = document.getElementById('fireworks-container');
+            if (fireworksContainer) {
+                fireworksContainer.innerHTML = '';
+            }
 
             hideCameraLoading();
 
             // Reset success screen messages
-            document.getElementById('success-message').textContent = 'Saving Photo...';
-            document.getElementById('saving-indicator').classList.remove('hidden');
-            document.getElementById('countdown-container').classList.add('hidden');
+            const successMessageEl = document.getElementById('success-message');
+            if (successMessageEl) {
+                successMessageEl.textContent = 'Saving Photo...';
+            }
+            const savingIndicatorEl = document.getElementById('saving-indicator');
+            if (savingIndicatorEl) {
+                savingIndicatorEl.classList.remove('hidden');
+            }
+            const countdownContainerEl = document.getElementById('countdown-container');
+            if (countdownContainerEl) {
+                countdownContainerEl.classList.add('hidden');
+            }
 
             // Show welcome screen
-            document.getElementById('success-screen').classList.add('hidden');
-            document.getElementById('welcome-screen').classList.remove('hidden');
+            const successScreenEl = document.getElementById('success-screen');
+            if (successScreenEl) {
+                successScreenEl.classList.add('hidden');
+            }
+            const welcomeScreenEl = document.getElementById('welcome-screen');
+            if (welcomeScreenEl) {
+                welcomeScreenEl.classList.remove('hidden');
+            }
 
             // Reset countdown
-            document.getElementById('countdown').textContent = '60';
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) {
+                countdownEl.textContent = '60';
+            }
         }
 
         function showCameraError() {
