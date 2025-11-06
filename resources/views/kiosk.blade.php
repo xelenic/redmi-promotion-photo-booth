@@ -194,6 +194,53 @@
             filter: drop-shadow(2px 2px 10px rgba(0,0,0,0.8));
         }
 
+        .camera-preloader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99;
+            color: white;
+            text-align: center;
+            gap: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .camera-preloader.hidden {
+            display: none;
+        }
+
+        .camera-preloader .preloader-spinner {
+            width: 70px;
+            height: 70px;
+            border: 6px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #ff7300;
+            border-radius: 50%;
+            animation: spin 1s linear infinite, glow 1.5s ease-in-out infinite alternate;
+        }
+
+        .camera-preloader p {
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 10px rgba(255, 115, 0, 0.6));
+            }
+            to {
+                filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.9));
+            }
+        }
+
         .countdown-overlay {
             position: absolute;
             top: 0;
@@ -286,6 +333,92 @@
             }
             100% {
                 opacity: 0;
+            }
+        }
+
+        /* Camera Loading Overlay */
+        .camera-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 100;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .camera-loading.active {
+            display: flex;
+        }
+
+        .camera-loading .loading-ring {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 8px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ff7300;
+            border-right-color: #fffb00;
+            border-bottom-color: #00ffd5;
+            border-left-color: #7a00ff;
+            animation: spinRing 1s linear infinite;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(255, 115, 0, 0.5),
+                        0 0 60px rgba(255, 251, 0, 0.3);
+            position: relative;
+        }
+
+        .camera-loading .loading-ring::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 115, 0, 0.3), transparent);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .camera-loading h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .camera-loading p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        @keyframes spinRing {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
             }
         }
 
@@ -449,55 +582,20 @@
             height: 100%;
             position: relative;
             overflow: hidden;
+            background: linear-gradient(180deg, rgba(8,8,8,0.92) 0%, rgba(0,0,0,0.98) 100%);
         }
 
-        #success-screen::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(
-                from 0deg,
-                #ff0000,
-                #ff7300,
-                #fffb00,
-                #48ff00,
-                #00ffd5,
-                #002bff,
-                #7a00ff,
-                #ff00c8,
-                #ff0000
-            );
-            animation: rotateBackground 20s linear infinite;
-            opacity: 0.3;
-            z-index: 0;
+        #success-screen h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
         }
 
-        #success-screen::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.7) 100%);
-            z-index: 1;
-        }
-
-        #success-screen > * {
-            position: relative;
-            z-index: 2;
-        }
-
-        @keyframes rotateBackground {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
+        #success-screen p {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            opacity: 0.95;
         }
 
         /* Fireworks Container */
@@ -551,19 +649,6 @@
             }
         }
 
-        #success-screen h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-        }
-
-        #success-screen p {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            opacity: 0.95;
-        }
-
         .photo-frame-container {
             position: relative;
             width: 60vh;
@@ -589,10 +674,10 @@
 
         .captured-photo-display {
             position: absolute;
-            width: 75%;
+            width: 85%;
             height: 85%;
             top: 7.5%;
-            left: 12.5%;
+            left: 7.5%;
             object-fit: cover;
             z-index: 2;
             border-radius: 15px;
@@ -651,6 +736,42 @@
             opacity: 0.8;
         }
 
+        /* Home Icon */
+        .home-icon {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .home-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .home-icon:active {
+            transform: scale(0.95);
+        }
+
+        .home-icon svg {
+            width: 30px;
+            height: 30px;
+            fill: white;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
         /* Loading spinner */
         .spinner {
             width: 40px;
@@ -702,6 +823,11 @@
 
         <!-- Step 2: Camera Screen -->
         <div id="camera-screen" class="hidden">
+            <div class="camera-loading" id="camera-loading">
+                <div class="loading-ring"></div>
+                <h2>Initializing Camera</h2>
+                <p>Give us a second while we prepare the view…</p>
+            </div>
             <div class="camera-wrapper">
                 <video id="video" autoplay playsinline></video>
                 <div class="camera-overlay"></div>
@@ -709,6 +835,12 @@
                     <img src="/02/02_Logo.png" alt="Logo" style="max-width: 49vh;margin-top: 2vh;width: 29vh;height: auto;">
                 </div>
                 <canvas id="canvas"></canvas>
+
+                <!-- Camera Preloader -->
+                <div class="camera-preloader hidden" id="camera-preloader">
+                    <div class="preloader-spinner"></div>
+                    <p>Starting camera...</p>
+                </div>
 
                 <!-- Countdown Overlay -->
                 <div class="countdown-overlay" id="countdown-overlay">
@@ -739,6 +871,13 @@
 
         <!-- Step 3: Success Screen -->
         <div id="success-screen" class="hidden">
+            <!-- Home Icon -->
+            <div class="home-icon" onclick="manualRestart()" title="Back to Home">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+            </div>
+
             <div class="fireworks-container" id="fireworks-container"></div>
             <div class="photo-frame-container">
                 <img id="captured-photo-display" src="" alt="Captured Photo" class="captured-photo-display">
@@ -749,7 +888,7 @@
                 <div class="spinner"></div>
                 <p>Please wait while we save your photo...</p>
             </div>
-            <div class="countdown hidden" id="countdown-container">Restarting in <span id="countdown">5</span> seconds...</div>
+            <div class="countdown hidden" id="countdown-container">Restarting in <span id="countdown">60</span> seconds...</div>
         </div>
     </div>
 
@@ -760,6 +899,8 @@
         const canvas = document.getElementById('canvas');
         const previewImage = document.getElementById('preview-image');
         const previewContainer = document.getElementById('preview-container');
+        const cameraPreloader = document.getElementById('camera-preloader');
+        const cameraLoading = document.getElementById('camera-loading');
 
         // CSRF Token for Laravel
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -769,6 +910,12 @@
                 // Hide welcome, show camera
                 document.getElementById('welcome-screen').classList.add('hidden');
                 document.getElementById('camera-screen').classList.remove('hidden');
+
+                // Show preloader immediately
+                showCameraLoading('Initializing Camera...');
+
+                // Small delay to ensure preloader is visible
+                await new Promise(resolve => setTimeout(resolve, 100));
 
                 // Request camera access
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -780,8 +927,28 @@
                 });
 
                 video.srcObject = stream;
+
+                // Wait for video to be ready
+                const handleLoaded = () => {
+                    hideCameraLoading();
+                    video.removeEventListener('loadeddata', handleLoaded);
+                    video.removeEventListener('canplay', handleLoaded);
+                    video.removeEventListener('playing', handleLoaded);
+                };
+
+                video.addEventListener('loadeddata', handleLoaded);
+                video.addEventListener('canplay', handleLoaded);
+                video.addEventListener('playing', handleLoaded);
+
+                // Fallback: hide after video starts playing
+                video.onplaying = () => {
+                    setTimeout(() => {
+                        hideCameraLoading();
+                    }, 300);
+                };
             } catch (error) {
                 console.error('Error accessing camera:', error);
+                hideCameraLoading();
                 showCameraError();
             }
         }
@@ -976,21 +1143,39 @@
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
+            hideCameraLoading();
         }
 
-        function startCountdown() {
-            let seconds = 5;
-            const countdownElement = document.getElementById('countdown');
+        let countdownInterval = null;
 
-            const interval = setInterval(() => {
+        function startCountdown() {
+            let seconds = 60;
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.textContent = seconds;
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            countdownInterval = setInterval(() => {
                 seconds--;
                 countdownElement.textContent = seconds;
 
                 if (seconds <= 0) {
-                    clearInterval(interval);
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
                     resetKiosk();
                 }
             }, 1000);
+        }
+
+        function manualRestart() {
+            // Clear countdown if running
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            resetKiosk();
         }
 
         function resetKiosk() {
@@ -1004,6 +1189,8 @@
             // Clear fireworks
             document.getElementById('fireworks-container').innerHTML = '';
 
+            hideCameraLoading();
+
             // Reset success screen messages
             document.getElementById('success-message').textContent = 'Saving Photo...';
             document.getElementById('saving-indicator').classList.remove('hidden');
@@ -1014,10 +1201,11 @@
             document.getElementById('welcome-screen').classList.remove('hidden');
 
             // Reset countdown
-            document.getElementById('countdown').textContent = '5';
+            document.getElementById('countdown').textContent = '60';
         }
 
         function showCameraError() {
+            hideCameraLoading();
             const cameraScreen = document.getElementById('camera-screen');
             cameraScreen.innerHTML = `
                 <div class="camera-error">
@@ -1030,6 +1218,20 @@
 
         function generateSessionId() {
             return 'kiosk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function showCameraLoading(message = 'Loading camera…') {
+            if (!cameraLoading) return;
+            cameraLoading.classList.add('active');
+            const title = cameraLoading.querySelector('h2');
+            const description = cameraLoading.querySelector('p');
+            if (title) title.textContent = message;
+            if (description) description.textContent = 'Give us a second while we prepare the view…';
+        }
+
+        function hideCameraLoading() {
+            if (!cameraLoading) return;
+            cameraLoading.classList.remove('active');
         }
 
         // Fireworks Animation
