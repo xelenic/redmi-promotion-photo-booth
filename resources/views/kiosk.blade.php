@@ -10,6 +10,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -66,6 +67,19 @@
             cursor: pointer;
             transition: all 0.3s ease;
             padding: 0;
+            outline: none;
+        }
+
+        .btn:focus,
+        .btn:active,
+        .capture-btn:focus,
+        .capture-btn:active,
+        .home-icon:focus,
+        .home-icon:active,
+        button:focus,
+        button:active {
+            outline: none;
+            box-shadow: none;
         }
 
         .btn-primary {
@@ -650,37 +664,34 @@
         }
 
         .photo-frame-container {
-            position: relative;
-            width: 60vh;
-            max-width: 80%;
-            aspect-ratio: 9/16;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-
-        .photo-frame {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             pointer-events: none;
+        }
+
+        .photo-frame {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            z-index: 3;
         }
 
         .captured-photo-display {
             position: absolute;
-            width: 85%;
-            height: 85%;
-            top: 7.5%;
-            left: 7.5%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
+            pointer-events: none;
             z-index: 2;
-            border-radius: 15px;
         }
 
         .saving-indicator {
@@ -882,11 +893,6 @@
             <div class="photo-frame-container">
                 <img id="captured-photo-display" src="" alt="Captured Photo" class="captured-photo-display">
                 <img src="/03/Frame_4K_1.png" alt="Photo Frame" class="photo-frame">
-            </div>
-            <h1 id="success-message">Saving Photo...</h1>
-            <div class="saving-indicator" id="saving-indicator">
-                <div class="spinner"></div>
-                <p>Please wait while we save your photo...</p>
             </div>
             <div class="countdown hidden" id="countdown-container">Restarting in <span id="countdown">60</span> seconds...</div>
         </div>
