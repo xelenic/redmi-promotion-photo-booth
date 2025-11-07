@@ -864,10 +864,65 @@
         .qr-link:hover {
             text-decoration: underline;
         }
+
+        /* Preloader Screen */
+        #preloader-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: white;
+        }
+
+        #preloader-screen.hidden {
+            display: none;
+        }
+
+        .preloader-spinner {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 8px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #f17106;
+            border-right-color: #f17106;
+            border-bottom-color: rgba(241, 113, 6, 0.5);
+            border-left-color: rgba(241, 113, 6, 0.3);
+            animation: spinRing 1s linear infinite;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(241, 113, 6, 0.6),
+                        0 0 60px rgba(241, 113, 6, 0.4);
+        }
+
+        .preloader-text {
+            font-size: 1.5rem;
+            font-weight: 300;
+            opacity: 0.9;
+            letter-spacing: 1px;
+        }
+
+        .preloader-progress {
+            margin-top: 20px;
+            font-size: 1rem;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
-    <div id="kiosk-container">
+    <!-- Preloader Screen -->
+    <div id="preloader-screen">
+        <div class="preloader-spinner"></div>
+        <div class="preloader-text">Loading...</div>
+        <div class="preloader-progress" id="preloader-progress">0%</div>
+    </div>
+
+    <div id="kiosk-container" class="hidden">
         <!-- Step 1: Welcome Screen -->
         <div id="welcome-screen">
             <img src="/01/01_Logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
@@ -963,6 +1018,9 @@
         const qrContainer = document.getElementById('qr-container');
         const qrImage = document.getElementById('qr-code');
         const qrLink = document.getElementById('qr-link');
+        const preloaderScreen = document.getElementById('preloader-screen');
+        const preloaderProgress = document.getElementById('preloader-progress');
+        const kioskContainer = document.getElementById('kiosk-container');
 
         function loadImage(src) {
             return new Promise((resolve, reject) => {
@@ -972,6 +1030,56 @@
                 img.src = src;
             });
         }
+
+        // Preload all images
+        async function preloadAssets() {
+            const images = [
+                '/01/00_BG.jpg',
+                '/01/01_Logo.png',
+                '/01/01_Button.png',
+                '/02/00_BG.jpg',
+                '/02/02_Logo.png',
+                '/02/02_Button.png',
+                '/03/Frame_4K_1.png'
+            ];
+
+            let loaded = 0;
+            const total = images.length;
+
+            const loadPromises = images.map((src, index) => {
+                return loadImage(src)
+                    .then(() => {
+                        loaded++;
+                        const progress = Math.round((loaded / total) * 100);
+                        if (preloaderProgress) {
+                            preloaderProgress.textContent = `${progress}%`;
+                        }
+                    })
+                    .catch((error) => {
+                        console.warn(`Failed to load image: ${src}`, error);
+                        loaded++;
+                        const progress = Math.round((loaded / total) * 100);
+                        if (preloaderProgress) {
+                            preloaderProgress.textContent = `${progress}%`;
+                        }
+                    });
+            });
+
+            await Promise.all(loadPromises);
+
+            // Hide preloader and show kiosk
+            if (preloaderScreen) {
+                preloaderScreen.classList.add('hidden');
+            }
+            if (kioskContainer) {
+                kioskContainer.classList.remove('hidden');
+            }
+        }
+
+        // Start preloading when page loads
+        window.addEventListener('load', () => {
+            preloadAssets();
+        });
 
         // CSRF Token for Laravel
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
