@@ -29,11 +29,10 @@
             max-width: 177.78vh; /* 16:9 ratio */
             margin: 0 auto;
             position: relative;
-            overflow: hidden;
+            background: url('/01/00_BG.jpg') center center / cover no-repeat;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #000;
         }
 
         /* Step 1: Welcome Screen */
@@ -135,22 +134,9 @@
             left: -4px;
             right: -4px;
             bottom: -4px;
-            background: conic-gradient(
-                from 0deg,
-                #ff0000,
-                #ff7300,
-                #fffb00,
-                #48ff00,
-                #00ffd5,
-                #002bff,
-                #7a00ff,
-                #ff00c8,
-                #ff0000
-            );
+            background: linear-gradient(135deg, rgba(241, 113, 6, 0.8), rgba(241, 113, 6, 0.3));
             border-radius: 34px;
             z-index: -1;
-            animation: rotate 4s linear infinite;
-            filter: blur(1px);
         }
 
         .camera-wrapper::after {
@@ -601,7 +587,6 @@
             position: relative;
             overflow: hidden;
             background: linear-gradient(180deg, rgba(8,8,8,0.92) 0%, rgba(0,0,0,0.98) 100%);
-            z-index: 2;
         }
 
         #success-screen h1 {
@@ -615,57 +600,6 @@
             font-size: 1.5rem;
             margin-bottom: 20px;
             opacity: 0.95;
-        }
-
-        /* Fireworks Container */
-        .fireworks-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-            overflow: hidden;
-        }
-
-        .firework {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            animation: fireworkExplode 1.5s ease-out forwards;
-        }
-
-        @keyframes fireworkExplode {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(0);
-                opacity: 0;
-            }
-        }
-
-        .firework-trail {
-            position: absolute;
-            bottom: 0;
-            width: 3px;
-            height: 100px;
-            background: linear-gradient(to top, transparent, var(--color));
-            animation: rocketLaunch 0.8s ease-out forwards;
-        }
-
-        @keyframes rocketLaunch {
-            0% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-200px);
-                opacity: 0;
-            }
         }
 
         .photo-frame-container {
@@ -917,15 +851,6 @@
             font-size: 1rem;
             opacity: 0.7;
         }
-        #background-video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
     </style>
 </head>
 <body>
@@ -937,9 +862,6 @@
     </div>
 
     <div id="kiosk-container" class="hidden">
-        <video id="background-video" autoplay muted loop playsinline preload="auto">
-            <source src="/BD_VID.mp4" type="video/mp4">
-        </video>
         <!-- Step 1: Welcome Screen -->
         <div id="welcome-screen">
             <img src="/01/01_Logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
@@ -1005,7 +927,6 @@
                 </svg>
             </div>
 
-            <div class="fireworks-container" id="fireworks-container"></div>
             <div class="photo-frame-container">
                 <img id="captured-photo-display" src="" alt="Captured Photo" class="captured-photo-display">
                 <img src="/03/Frame_4K_1.png" alt="Photo Frame" class="photo-frame">
@@ -1038,7 +959,6 @@
         const preloaderScreen = document.getElementById('preloader-screen');
         const preloaderProgress = document.getElementById('preloader-progress');
         const kioskContainer = document.getElementById('kiosk-container');
-        const backgroundVideo = document.getElementById('background-video');
 
         function loadImage(src) {
             return new Promise((resolve, reject) => {
@@ -1062,7 +982,7 @@
             ];
 
             let loaded = 0;
-            const total = images.length + (backgroundVideo ? 1 : 0);
+            const total = images.length;
 
             const updateProgress = () => {
                 if (total > 0 && preloaderProgress) {
@@ -1091,29 +1011,6 @@
                         updateProgress();
                     });
             });
-
-            if (backgroundVideo) {
-                loadPromises.push(new Promise((resolve) => {
-                    const handleVideoLoaded = () => {
-                        loaded++;
-                        updateProgress();
-                        backgroundVideo.removeEventListener('canplaythrough', handleVideoLoaded);
-                        resolve();
-                    };
-
-                    if (backgroundVideo.readyState >= 3) {
-                        handleVideoLoaded();
-                    } else {
-                        backgroundVideo.addEventListener('canplaythrough', handleVideoLoaded);
-                        backgroundVideo.preload = 'auto';
-                        backgroundVideo.load();
-                    }
-                }).catch((error) => {
-                    console.warn('Failed to load background video', error);
-                    loaded++;
-                    updateProgress();
-                }));
-            }
 
             await Promise.all(loadPromises);
 
@@ -1288,7 +1185,7 @@
                 if (savingIndicatorEl) {
                     savingIndicatorEl.classList.add('hidden');
                 }
-                startCountdown();
+                // Auto-redirect disabled - user must click home button to restart
                 return;
             }
 
@@ -1329,10 +1226,10 @@
                     // Update success message
                     document.getElementById('success-message').textContent = 'Photo Saved Successfully!';
                     document.getElementById('saving-indicator').classList.add('hidden');
-                    document.getElementById('countdown-container').classList.remove('hidden');
-
-                    // Launch fireworks celebration
-                    launchFireworks();
+                    const countdownContainerEl = document.getElementById('countdown-container');
+                    if (countdownContainerEl) {
+                        countdownContainerEl.classList.add('hidden');
+                    }
 
                     // Generate QR code download link
                     if (qrContainer && qrImage && qrLink && data.photo_url) {
@@ -1354,30 +1251,20 @@
                         });
                     }
 
-                    // Start countdown to restart
-                    startCountdown();
+                    // Countdown auto-redirect is disabled - user must click home button to restart
                 } else {
                     throw new Error('Failed to save photo');
                 }
             } catch (error) {
                 console.error('Error saving photo:', error);
-                const successMessageEl = document.getElementById('success-message');
-                if (successMessageEl) {
-                    successMessageEl.textContent = 'Error Saving Photo';
-                }
-                const savingIndicatorEl = document.getElementById('saving-indicator');
-                if (savingIndicatorEl) {
-                    savingIndicatorEl.innerHTML = '<p style="color: #ff6b6b;">Failed to save. Photo will still reset.</p>';
-                }
+                document.getElementById('success-message').textContent = 'Error Saving Photo';
+                document.getElementById('saving-indicator').innerHTML = '<p style="color: #ff6b6b;">Failed to save. Photo will still be available.</p>';
 
-                // Still start countdown even on error
                 setTimeout(() => {
                     document.getElementById('saving-indicator').classList.add('hidden');
-                    document.getElementById('countdown-container').classList.remove('hidden');
                     if (qrContainer) {
                         qrContainer.classList.add('hidden');
                     }
-                    startCountdown();
                 }, 2000);
             }
         }
@@ -1390,24 +1277,24 @@
             hideCameraLoading();
         }
 
-        let countdownInterval = null;
+        let resetCountdownInterval = null;
 
         function startCountdown() {
             let seconds = 60;
             const countdownElement = document.getElementById('countdown');
             countdownElement.textContent = seconds;
 
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
+            if (resetCountdownInterval) {
+                clearInterval(resetCountdownInterval);
             }
 
-            countdownInterval = setInterval(() => {
+            resetCountdownInterval = setInterval(() => {
                 seconds--;
                 countdownElement.textContent = seconds;
 
                 if (seconds <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
+                    clearInterval(resetCountdownInterval);
+                    resetCountdownInterval = null;
                     resetKiosk();
                 }
             }, 1000);
@@ -1415,9 +1302,9 @@
 
         function manualRestart() {
             // Clear countdown if running
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
+            if (resetCountdownInterval) {
+                clearInterval(resetCountdownInterval);
+                resetCountdownInterval = null;
             }
             resetKiosk();
         }
@@ -1436,10 +1323,6 @@
             }
 
             // Clear fireworks
-            const fireworksContainer = document.getElementById('fireworks-container');
-            if (fireworksContainer) {
-                fireworksContainer.innerHTML = '';
-            }
 
             hideCameraLoading();
 
@@ -1512,71 +1395,6 @@
         function hideCameraLoading() {
             if (!cameraLoading) return;
             cameraLoading.classList.remove('active');
-        }
-
-        // Fireworks Animation
-        function launchFireworks() {
-            const container = document.getElementById('fireworks-container');
-            const colors = ['#ff0000', '#ff7300', '#fffb00', '#48ff00', '#00ffd5', '#002bff', '#7a00ff', '#ff00c8'];
-
-            // Clear any existing fireworks
-            container.innerHTML = '';
-
-            // Launch multiple fireworks
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    createFirework(container, colors);
-                }, i * 300);
-            }
-
-            // Continue launching fireworks for 3 seconds
-            let count = 0;
-            const interval = setInterval(() => {
-                createFirework(container, colors);
-                count++;
-                if (count >= 8) {
-                    clearInterval(interval);
-                }
-            }, 500);
-        }
-
-        function createFirework(container, colors) {
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const startX = Math.random() * window.innerWidth;
-            const startY = window.innerHeight;
-            const explosionY = Math.random() * 200 + 100; // Explode in upper half
-
-            // Create explosion point
-            const explosionX = startX + (Math.random() - 0.5) * 200;
-
-            // Create particles
-            const particleCount = 30;
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'firework';
-                particle.style.left = explosionX + 'px';
-                particle.style.top = explosionY + 'px';
-                particle.style.background = color;
-                particle.style.boxShadow = `0 0 10px ${color}`;
-
-                // Random direction for explosion
-                const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = Math.random() * 100 + 100;
-                const tx = Math.cos(angle) * velocity;
-                const ty = Math.sin(angle) * velocity;
-
-                particle.style.setProperty('--tx', tx + 'px');
-                particle.style.setProperty('--ty', ty + 'px');
-
-                container.appendChild(particle);
-
-                // Remove after animation
-                setTimeout(() => {
-                    if (particle.parentNode === container) {
-                        container.removeChild(particle);
-                    }
-                }, 1500);
-            }
         }
 
         // Prevent accidental navigation
