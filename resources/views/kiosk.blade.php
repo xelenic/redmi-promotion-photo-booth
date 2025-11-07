@@ -29,10 +29,11 @@
             max-width: 177.78vh; /* 16:9 ratio */
             margin: 0 auto;
             position: relative;
-            background: url('/01/00_BG.jpg') center center / cover no-repeat;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #000;
         }
 
         /* Step 1: Welcome Screen */
@@ -47,6 +48,8 @@
             background: rgba(0, 0, 0, 0.3);
             width: 100%;
             height: 100%;
+            position: relative;
+            z-index: 2;
         }
 
         #welcome-screen.hidden,
@@ -112,6 +115,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
         }
 
         .camera-wrapper {
@@ -597,6 +601,7 @@
             position: relative;
             overflow: hidden;
             background: linear-gradient(180deg, rgba(8,8,8,0.92) 0%, rgba(0,0,0,0.98) 100%);
+            z-index: 2;
         }
 
         #success-screen h1 {
@@ -912,6 +917,15 @@
             font-size: 1rem;
             opacity: 0.7;
         }
+        #background-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
@@ -923,6 +937,9 @@
     </div>
 
     <div id="kiosk-container" class="hidden">
+        <video id="background-video" autoplay muted loop playsinline preload="auto">
+            <source src="/BD_VID.mp4" type="video/mp4">
+        </video>
         <!-- Step 1: Welcome Screen -->
         <div id="welcome-screen">
             <img src="/01/01_Logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
@@ -1021,6 +1038,7 @@
         const preloaderScreen = document.getElementById('preloader-screen');
         const preloaderProgress = document.getElementById('preloader-progress');
         const kioskContainer = document.getElementById('kiosk-container');
+        const backgroundVideo = document.getElementById('background-video');
 
         function loadImage(src) {
             return new Promise((resolve, reject) => {
@@ -1044,26 +1062,58 @@
             ];
 
             let loaded = 0;
-            const total = images.length;
+            const total = images.length + (backgroundVideo ? 1 : 0);
 
-            const loadPromises = images.map((src, index) => {
+            const updateProgress = () => {
+                if (total > 0 && preloaderProgress) {
+                    const progress = Math.round((loaded / total) * 100);
+                    preloaderProgress.textContent = `${Math.min(progress, 100)}%`;
+                }
+            };
+
+            if (total === 0) {
+                if (preloaderScreen) {
+                    preloaderScreen.classList.add('hidden');
+                }
+                if (kioskContainer) {
+                    kioskContainer.classList.remove('hidden');
+                }
+                return;
+            }
+
+            const loadPromises = images.map((src) => {
                 return loadImage(src)
-                    .then(() => {
-                        loaded++;
-                        const progress = Math.round((loaded / total) * 100);
-                        if (preloaderProgress) {
-                            preloaderProgress.textContent = `${progress}%`;
-                        }
-                    })
                     .catch((error) => {
                         console.warn(`Failed to load image: ${src}`, error);
+                    })
+                    .finally(() => {
                         loaded++;
-                        const progress = Math.round((loaded / total) * 100);
-                        if (preloaderProgress) {
-                            preloaderProgress.textContent = `${progress}%`;
-                        }
+                        updateProgress();
                     });
             });
+
+            if (backgroundVideo) {
+                loadPromises.push(new Promise((resolve) => {
+                    const handleVideoLoaded = () => {
+                        loaded++;
+                        updateProgress();
+                        backgroundVideo.removeEventListener('canplaythrough', handleVideoLoaded);
+                        resolve();
+                    };
+
+                    if (backgroundVideo.readyState >= 3) {
+                        handleVideoLoaded();
+                    } else {
+                        backgroundVideo.addEventListener('canplaythrough', handleVideoLoaded);
+                        backgroundVideo.preload = 'auto';
+                        backgroundVideo.load();
+                    }
+                }).catch((error) => {
+                    console.warn('Failed to load background video', error);
+                    loaded++;
+                    updateProgress();
+                }));
+            }
 
             await Promise.all(loadPromises);
 
