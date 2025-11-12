@@ -6,6 +6,7 @@ use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PhotoController extends Controller
 {
@@ -61,5 +62,26 @@ class PhotoController extends Controller
     {
         $photo = Photo::findOrFail($id);
         return response()->json($photo);
+    }
+
+    public function generateQrCode(Request $request)
+    {
+        $request->validate([
+            'data' => 'required|string',
+            'size' => 'nullable|integer|min:50|max:1000',
+        ]);
+
+        $data = $request->input('data');
+        $size = $request->input('size', 320);
+
+        // Generate QR code as PNG
+        $qrCode = QrCode::format('png')
+            ->size($size)
+            ->margin(1)
+            ->generate($data);
+
+        return response($qrCode)
+            ->header('Content-Type', 'image/png')
+            ->header('Cache-Control', 'public, max-age=3600');
     }
 }

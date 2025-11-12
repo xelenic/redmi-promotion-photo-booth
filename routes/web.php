@@ -16,3 +16,6 @@ Route::get('/admin/photos', function () {
 Route::post('/api/photos', [PhotoController::class, 'store']);
 Route::get('/api/photos', [PhotoController::class, 'index']);
 Route::get('/api/photos/{id}', [PhotoController::class, 'show']);
+
+// QR code generation route
+Route::get('/api/qrcode', [PhotoController::class, 'generateQrCode']);

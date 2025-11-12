@@ -1237,7 +1237,8 @@
                             ? data.photo_url
                             : `${window.location.origin}${data.photo_url}`;
                         console.log('Generated QR download URL:', downloadUrl);
-                        qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(downloadUrl)}`;
+                        // Use local QR code generation endpoint
+                        qrImage.src = `/api/qrcode?data=${encodeURIComponent(downloadUrl)}&size=320`;
                         qrLink.textContent = downloadUrl;
                         qrLink.href = downloadUrl;
                         qrContainer.classList.remove('hidden');
