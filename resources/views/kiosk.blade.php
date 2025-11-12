@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Promotional Campaign Kiosk</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js" integrity="sha384-lGUMmzEWVOliWfynhZoL3yYsKM9kbLj4yEJITWic9Y2Q2Dw/dCTeor7YNLlhlQgR" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -1237,11 +1238,26 @@
                             ? data.photo_url
                             : `${window.location.origin}${data.photo_url}`;
                         console.log('Generated QR download URL:', downloadUrl);
-                        // Use local QR code generation endpoint
-                        qrImage.src = `/api/qrcode?data=${encodeURIComponent(downloadUrl)}&size=320`;
+
                         qrLink.textContent = downloadUrl;
                         qrLink.href = downloadUrl;
-                        qrContainer.classList.remove('hidden');
+
+                        if (window.QRCode && typeof QRCode.toDataURL === 'function') {
+                            try {
+                                const qrDataUrl = await QRCode.toDataURL(downloadUrl, {
+                                    width: 320,
+                                    margin: 1,
+                                });
+                                qrImage.src = qrDataUrl;
+                                qrContainer.classList.remove('hidden');
+                            } catch (qrError) {
+                                console.error('Failed to generate QR code:', qrError);
+                                qrContainer.classList.add('hidden');
+                            }
+                        } else {
+                            console.warn('QRCode library not available');
+                            qrContainer.classList.add('hidden');
+                        }
                     } else {
                         console.warn('QR data missing', {
                             qrContainer,
